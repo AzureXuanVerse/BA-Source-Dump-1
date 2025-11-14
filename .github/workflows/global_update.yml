@@ -2,11 +2,17 @@ name: Dump Global Update
 
 on:
   schedule:
-    # Run every Tuesday at 04:00, 06:00 and 09:00 UTC
-    - cron: '0 4,6,9 * * 2'
+    # Run every Tuesday at 02:00, 05:00, 09:00, 12:00 UTC
+    - cron: '0 2,5,9,12 * * 2'
     # Run everyday at 07:00 UTC
     - cron: '0 7 * * *'
   workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Force push update.'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -90,7 +96,9 @@ jobs:
           echo "changed=$changed_flag" >> $GITHUB_OUTPUT
 
       - name: Configure Git LFS
-        if: steps.check_diff.outputs.changed == 'true'
+        if: >
+          steps.check_diff.outputs.changed == 'true' || 
+          github.event.inputs.force_update == 'true'
         shell: bash
         run: |
           git lfs install
@@ -105,22 +113,24 @@ jobs:
           fi
 
       - name: Commit and Push Update
-        if: steps.check_diff.outputs.changed == 'true'
+        if: >
+          steps.check_diff.outputs.changed == 'true' || 
+          github.event.inputs.force_update == 'true'
         shell: bash
         run: |
-          game_version=$(jq -r '.latest_build_version' global_data/config.json)
-          resource_path=$(jq -r '.patch.resource_path' global_data/config.json)
-          catalog_id=$(echo "$resource_path" | sed -n 's#.*/com\.nexon\.bluearchive/\([^/]*\)/.*#\1#p')
-          catalog_version=$(jq -r '.patch_version' global_data/resources.json)
+          game_version=$(jq -r '.GameVersion' global_data/metadata.json)
+          resource_build=$(jq -r '.ResourceBuild' global_data/metadata.json)
           
-          commit_msg="${game_version}_${catalog_version}_${catalog_id}"
+          commit_msg="${game_version}_${resource_build}"
           
           git add global_data
           git commit -m "$commit_msg"
           git push origin global-dump
       
       - name: Send update to Discord
-        if: steps.check_diff.outputs.changed == 'true'
+        if: >
+          steps.check_diff.outputs.changed == 'true' || 
+          github.event.inputs.force_update == 'true'
         shell: bash
         run: |
           commit_hash=$(git rev-parse HEAD)
@@ -135,17 +145,19 @@ jobs:
           fbs_v2_data_link="${prepath_raw_link}/BlueArchiveV2.fbs"
           dll_files="${treepath_link}/dll"
 
-          game_version=$(jq -r '.latest_build_version' global_data/config.json)
-          resource_path=$(jq -r '.patch.resource_path' global_data/config.json)
-          catalog_id=$(echo "$resource_path" | sed -n 's#.*/com\.nexon\.bluearchive/\([^/]*\)/.*#\1#p')
-          catalog_version=$(jq -r '.patch_version' global_data/resources.json)
+          game_version=$(jq -r '.GameVersion' global_data/metadata.json)
+          resource_url=$(jq -r '.ResourceUrl' global_data/metadata.json)
+          resource_build=$(jq -r '.ResourceBuild' global_data/metadata.json)
+          resource_patch=$(jq -r '.ResourcePatch' global_data/metadata.json)
+          
+          full_version="${game_version}_${resource_build}"
 
           embed_description=$(cat <<EOF
           **Game Info**
           Game Version: ${game_version}
-          Resource Data: [${catalog_id}](${resource_path})
-          Resource Version: ${catalog_version}
-          Resource Id: ${catalog_id}
+          Resource Url: ${resource_url}
+          Resource Patch Version: ${resource_patch}
+          Resource Build Version: ${resource_build}
 
           **Game Data**
           Config Data: [config.json](${config_link})
@@ -160,7 +172,7 @@ jobs:
           timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
           payload=$(jq -n \
-            --arg title "Global Config Update" \
+            --arg title "Global Update (${full_version})" \
             --arg description "$embed_description" \
             --arg url "$commit_url" \
             --arg timestamp "$timestamp" \
