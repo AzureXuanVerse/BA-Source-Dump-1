@@ -1,5 +1,4 @@
 from typing import Union
-
 from xxhash import xxh32_intdigest
 
 def calculate_hash(name: Union[bytes, str]) -> int:

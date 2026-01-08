@@ -13,7 +13,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--client",
         choices=["global", "jp"],
-        required=True,
         default="jp",
         help="Which game client to download (default: jp)",
     )
