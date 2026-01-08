@@ -6,6 +6,7 @@ from lib.ApkDownloader import FileDownloader, FileExtractor
 if __name__ == "__main__":
     os_system = platform.system()
     lib_dir = os.path.join(os.getcwd(), f'tools')
+    os.makedirs(lib_dir, exist_ok=True)
     
     # Il2CppInspectorRedux
     il2cppInspectorReduxUrl = "https://nightly.link/ArkanDash/Il2CppInspectorRedux/workflows/build/master/Il2CppInspectorRedux.CLI-linux-x64.zip"
