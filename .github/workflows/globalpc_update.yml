@@ -84,6 +84,7 @@ jobs:
           if git ls-tree -r origin/globalpc-dump --name-only | grep -Fxq "$config_file"; then
             if git diff --quiet origin/globalpc-dump -- "$config_file"; then
               echo "✅ The file is identical to the previous commit."
+              exit 1
             else
               echo "⚠️ The file has been modified."
               changed_flag=true
