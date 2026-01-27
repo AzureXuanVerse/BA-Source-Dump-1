@@ -1,7 +1,8 @@
 import os
 import platform
 
-from lib.ApkDownloader import FileDownloader, FileExtractor
+from lib.FileExtractor import FileExtractor
+from lib.FileDownloader import FileDownloader
 
 if __name__ == "__main__":
     os_system = platform.system()

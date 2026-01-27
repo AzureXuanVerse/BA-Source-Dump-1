@@ -7,7 +7,6 @@ from typing import Dict, Any
 PLAYSTORE_URL = "https://play.google.com/store/apps/details?id=com.nexon.bluearchive&hl=in&gl=US"
 API_URL = "https://api-patch.nexon.com/patch/v1.1/version-check"
 
-
 def get_game_version() -> str:
     version_pattern = re.compile(r"\d{1}\.\d{2}\.\d{6}")
     response = requests.get(PLAYSTORE_URL)

@@ -1,10 +1,9 @@
 import os
 import argparse
 
-from lib.ApkDownloader import (
-    FileDownloader,
-    FileExtractor
-)
+from lib.FileExtractor import FileExtractor
+from lib.FileDownloader import FileDownloader
+from lib.ApkProviderFetcher import get_apk_url
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -30,7 +29,7 @@ if __name__ == "__main__":
 
     # Download and Extract the Game XAPK
     print(f"Downloading {client} Data...")
-    xapk_url = f"https://d.apkpure.com/b/XAPK/{pkg}?version=latest"
+    xapk_url = get_apk_url(pkg)
     downloader = FileDownloader(xapk_url, download_dir, f"{pkg}.xapk")
     downloader.download()
     FileExtractor(downloader.local_filepath, extract_dir, client).extract_xapk()
