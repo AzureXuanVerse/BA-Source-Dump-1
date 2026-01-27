@@ -8,6 +8,11 @@ on:
     - cron: '0 7 * * *'
   workflow_dispatch:
     inputs:
+      force_url:
+        description: 'Direct CDN URL (skips scraping if provided)'
+        required: false
+        default: ''
+        type: string
       force_update:
         description: 'Force push update.'
         required: false
@@ -54,7 +59,12 @@ jobs:
         run: python getTools.py
 
       - name: Get APK & Dumper
-        run: python getAndroidGameData.py --client jp
+        run: |
+          if [ -n "${{ github.event.inputs.force_url }}" ]; then
+            python getAndroidGameData.py --client jp --url "${{ github.event.inputs.force_url }}"
+          else
+            python getAndroidGameData.py --client jp
+          fi
         
       - name: Run Dumper
         run: python getJPVersion.py

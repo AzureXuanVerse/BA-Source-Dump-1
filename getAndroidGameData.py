@@ -15,6 +15,12 @@ if __name__ == "__main__":
         default="jp",
         help="Which game client to download (default: jp)",
     )
+    parser.add_argument(
+        "--url",
+        required=False,
+        default=None,
+        help="Download URL (default: None)",
+    )
     args = parser.parse_args()
     
     client = args.client
@@ -29,7 +35,7 @@ if __name__ == "__main__":
 
     # Download and Extract the Game XAPK
     print(f"Downloading {client} Data...")
-    xapk_url = get_apk_url(pkg)
+    xapk_url = get_apk_url(pkg) if args.url is None else args.url
     downloader = FileDownloader(xapk_url, download_dir, f"{pkg}.xapk")
     downloader.download()
     FileExtractor(downloader.local_filepath, extract_dir, client).extract_xapk()
