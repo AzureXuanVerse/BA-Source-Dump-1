@@ -9,7 +9,7 @@ APKPURE_PKG_PATTERN = r'<link rel="canonical" href="https://apkpure\.com/[^/]+/(
 APKCOMBO_URL = "https://apkcombo.com/{app_name}/{pkg}/download/apk"
 APKCOMBO_VER_PATTERN = r'Version:\s*([\d\.]+)'
 APKCOMBO_CDN_PATTERN = r'https%3A%2F%2Fapks\.[^.]+\.r2\.cloudflarestorage\.com%2F[^&"]+'
-    
+
 def get_apk_url(pkg: str):
     (apk_pure_version, apk_pure_cdn_url) = get_apkpure_url(pkg)
     (apk_combo_version, apk_combo_cdn_url) = get_apkcombo_url(pkg)
@@ -33,9 +33,19 @@ def get_apk_url(pkg: str):
 
 def get_apkpure_url(pkg: str) -> (str, str):
     url = APKPURE_URL.format(pkg=pkg)
-    scraper = cloudscraper.create_scraper()
+    scraper = cloudscraper.create_scraper(
+        browser={
+            'browser': 'chrome',
+            'platform': 'windows',
+            'desktop': True
+        }
+    )
+    headers = {
+        'Referer': f'https://apkpure.com/blue-archive/com.YostarJP.BlueArchive/download',
+        'Accept-Language': 'en-US,en;q=0.9'
+    }
     try:
-        response = scraper.get(url, timeout=10)
+        response = scraper.get(url, headers=headers, stream=True, timeout=10)
         response.raise_for_status()
         file_content = response.text
         
@@ -70,7 +80,7 @@ def get_apkcombo_url(pkg: str) -> (str, str):
         'Accept-Language': 'en-US,en;q=0.9'
     }
     try:
-        response = scraper.get(url, headers=headers, timeout=10)
+        response = scraper.get(url, headers=headers, stream=True, timeout=10)
         response.raise_for_status()
         file_content = response.text
         
