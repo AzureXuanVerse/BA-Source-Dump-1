@@ -1,6 +1,7 @@
 import os, platform
 import json
 import requests
+import argparse
 
 from lib.CatalogFetcher import decrypt_game_config, find_game_config
 from lib.Il2CppInspectorDumper import Il2CppInspectorDumperCLI
@@ -8,6 +9,18 @@ from lib.FBSDumper import FbsDumperCLI
 from lib.SQLCipherFetch import get_sql_cipher_key
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Dump JP Version"
+    )
+    parser.add_argument(
+        "--sql-cipher-url",
+        required=False,
+        default=None,
+        help="SQL Cipher Key URL (default: None)",
+    )
+    args = parser.parse_args()
+    sql_cipher_url = args.sql_cipher_url
+    
     os_system = platform.system()
     tools_dir = os.path.join(os.getcwd(), f'tools')
     extract_dir = os.path.join(os.getcwd(), 'jp_extracted')
@@ -87,7 +100,7 @@ if __name__ == "__main__":
         "AddressableVersion": addressGameVersion,
         "AddressableBuildVersion": addressUrl.split('/')[-1],
         "AddressableUrl": addressUrl,
-        "SQLCipherKey": get_sql_cipher_key(gateway_url, bundle_version)
+        "SQLCipherKey": get_sql_cipher_key(sql_cipher_url, gateway_url, bundle_version)
     }
 
     with open(metadata_file_path, 'w', encoding='utf-8') as file:

@@ -58,7 +58,7 @@ jobs:
       - name: Get Tools
         run: python getTools.py
 
-      - name: Get APK & Dumper
+      - name: Get APK
         shell: bash
         run: |
           if [ -n "${{ github.event.inputs.force_url }}" ]; then
@@ -68,7 +68,7 @@ jobs:
           fi
         
       - name: Run Dumper
-        run: python getJPVersion.py
+        run: python getJPVersion.py --sql-cipher-url ${{ secrets.SQL_FETCH_URL }}
 
       - name: Save content temporary
         id: save_data
