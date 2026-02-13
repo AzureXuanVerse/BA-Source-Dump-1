@@ -94,26 +94,28 @@ jobs:
         run: |
           config_file="global_data/config.json"
           changed_flag=false
+          force_push="${{ github.event.inputs.force_update }}"
 
           if git ls-tree -r origin/global-dump --name-only | grep -Fxq "$config_file"; then
-            if git diff --quiet origin/global-dump -- "$config_file"; then
-              echo "✅ The file is identical to the previous commit."
-              exit 1
-            else
+            if ! git diff --quiet origin/global-dump -- "$config_file"; then
               echo "⚠️ The file has been modified."
               changed_flag=true
+            else
+              echo "✅ The file is identical to the previous commit."
             fi
           else
             echo "⚠️ The file does not exist. Add the file."
             changed_flag=true
           fi
 
-          echo "changed=$changed_flag" >> $GITHUB_OUTPUT
+          if [ "$changed_flag" = "true" ] || [ "$force_push" = "true" ]; then
+            echo "changed_flag=true" >> $GITHUB_OUTPUT
+          else
+            exit 1
+          fi  
 
       - name: Configure Git LFS
-        if: >
-          steps.check_diff.outputs.changed == 'true' || 
-          github.event.inputs.force_update == 'true'
+        if: steps.check_diff.outputs.changed_flag == 'true'
         shell: bash
         run: |
           git lfs install
@@ -128,9 +130,7 @@ jobs:
           fi
 
       - name: Commit and Push Update
-        if: >
-          steps.check_diff.outputs.changed == 'true' || 
-          github.event.inputs.force_update == 'true'
+        if: steps.check_diff.outputs.changed_flag == 'true'
         shell: bash
         run: |
           game_version=$(jq -r '.GameVersion' global_data/metadata.json)
@@ -143,9 +143,7 @@ jobs:
           git push origin global-dump
       
       - name: Send update to Discord
-        if: >
-          steps.check_diff.outputs.changed == 'true' || 
-          github.event.inputs.force_update == 'true'
+        if: steps.check_diff.outputs.changed_flag == 'true'
         shell: bash
         run: |
           commit_hash=$(git rev-parse HEAD)
