@@ -165,6 +165,7 @@ jobs:
           addressable_url=$(jq -r '.AddressableUrl' jp_data/metadata.json)
           addressable_version=$(jq -r '.AddressableVersion' jp_data/metadata.json)
           addressable_build_version=$(jq -r '.AddressableBuildVersion' jp_data/metadata.json)
+          sql_cipher_key=$(jq -r '.SQLCipherKey' jp_data/metadata.json)
 
           full_version="${game_version}_${addressable_build_version}"
 
@@ -176,6 +177,7 @@ jobs:
           Addressable Url: ${addressable_url}
           Addressable Version: ${addressable_version}
           Addressable Build Version: ${addressable_build_version}
+          SQL Cipher Key: ${sql_cipher_key}
 
           **Game Data**
           Config Data: [config.json](${config_link})

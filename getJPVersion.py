@@ -5,9 +5,9 @@ import requests
 from lib.CatalogFetcher import decrypt_game_config, find_game_config
 from lib.Il2CppInspectorDumper import Il2CppInspectorDumperCLI
 from lib.FBSDumper import FbsDumperCLI
+from lib.SQLCipherFetch import get_sql_cipher_key
 
 if __name__ == "__main__":
-    # Setup paths
     os_system = platform.system()
     tools_dir = os.path.join(os.getcwd(), f'tools')
     extract_dir = os.path.join(os.getcwd(), 'jp_extracted')
@@ -62,7 +62,6 @@ if __name__ == "__main__":
     with open(xapk_manifest_path, encoding='utf-8') as f:
         manifest = json.load(f)
 
-    # Request the data from config and save to the disk
     try:
         response = requests.get(config_url)
         response.raise_for_status()
@@ -75,6 +74,8 @@ if __name__ == "__main__":
     except requests.RequestException as e:
         print(f"Error fetching config data: {e}")
 
+    gateway_url = config_data_res["ConnectionGroups"][0]["GatewayUrl"]
+    bundle_version = config_data_res["ConnectionGroups"][0]["BundleVersion"]
     addressVersion = config_data_res["ConnectionGroups"][0]["OverrideConnectionGroups"][-1]["Name"]
     addressUrl = config_data_res["ConnectionGroups"][0]["OverrideConnectionGroups"][-1]["AddressablesCatalogUrlRoot"]
     addressGameVersion = f"{addressVersion}.{addressUrl.split('/')[-1]}"
@@ -85,7 +86,8 @@ if __name__ == "__main__":
         "BuildVersion": manifest["version_code"],
         "AddressableVersion": addressGameVersion,
         "AddressableBuildVersion": addressUrl.split('/')[-1],
-        "AddressableUrl": addressUrl
+        "AddressableUrl": addressUrl,
+        "SQLCipherKey": get_sql_cipher_key(gateway_url, bundle_version)
     }
 
     with open(metadata_file_path, 'w', encoding='utf-8') as file:

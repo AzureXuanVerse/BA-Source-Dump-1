@@ -7,7 +7,6 @@ from lib.Il2CppInspectorDumper import Il2CppInspectorDumperCLI
 from lib.FBSDumper import FbsDumperCLI
 
 if __name__ == "__main__":
-    # Setup paths
     os_system = platform.system()
     tools_dir = os.path.join(os.getcwd(), f'tools')
     extract_dir = os.path.join(os.getcwd(), 'global_extracted')
